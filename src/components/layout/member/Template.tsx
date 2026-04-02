@@ -1,36 +1,29 @@
-import { useState } from 'react';
-import NavigationHeader from './NavigationHeader'
-import SideNavigation from './SideNavigation'
+import NavigationHeader from './NavigationHeader';
 
 interface TemplateProps {
-    content: React.ReactNode;
-    wizardMode?: boolean;
-    saveAndExit?: () => void;
-    saveAndExitDisabled?: boolean;
+  content: React.ReactNode;
+  wizardMode?: boolean;
+  saveAndExit?: () => void;
+  saveAndExitDisabled?: boolean;
 }
 
 export const Template = (props: TemplateProps) => {
+  return (
+    <div className="h-screen flex flex-col bg-slate-50">
 
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+      {/* HEADER */}
+      <NavigationHeader
+        showLogo={true}
+        wizardMode={props.wizardMode ?? false}
+        saveAndExit={props.saveAndExit}
+        saveAndExitDisabled={props.saveAndExitDisabled ?? false}
+      />
 
-    return (
-        <div className="flex h-screen">
-            <SideNavigation isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            <div className="flex-1 overflow-auto">
-                <div className="min-h-screen bg-slate-50">
-                    <NavigationHeader
-                        showLogo={true}
-                        showHomeButton={false}
-                        showBackButton={false}
-                        wizardMode={props.wizardMode ?? false}
-                        saveAndExit={props.saveAndExit}
-                        saveAndExitDisabled={props.saveAndExitDisabled ?? false}
-                        onMenuClick={() => setIsMobileMenuOpen(true)}
-                    />
-                    {/* Main content goes here */}
-                    {props.content}
-                </div>
-            </div>
-        </div>
-    )
-}
+      {/* CONTENT */}
+      <main className="flex-1 overflow-auto p-4 md:p-6">
+        {props.content}
+      </main>
+
+    </div>
+  );
+};

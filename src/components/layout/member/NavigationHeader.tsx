@@ -1,237 +1,262 @@
 import { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Home, ArrowLeft, LogOut, FileText, Users, CheckSquare, Save, Menu, User } from 'lucide-react';
+import {
+  Plus,
+  LogOut,
+  FileTypeCorner,
+  UserRound,
+  CheckCircle2,
+  ChevronDown,
+  FileText,
+  Menu,
+  Save
+} from 'lucide-react';
+
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { logout } from '../../../features/auth/authSlice';
-import { handleAddProject, handleViewTasks } from '../../../utils/navigation';
 import { setView } from '../../../store/slices/viewSlice';
+import { handleAddProject, handleViewTasks } from '../../../utils/navigation';
+import { menuSections } from '../../../utils/menu';
 
 interface NavigationHeaderProps {
-    readonly onBack?: () => void;
-    readonly onHome?: () => void;
-    readonly title?: string;
-    readonly showBackButton?: boolean;
-    readonly showHomeButton?: boolean;
-    readonly showLogo?: boolean;
-    readonly saveAndExit?: () => void;
-    readonly wizardMode?: boolean;
-    readonly saveAndExitDisabled?: boolean;
-    readonly onMenuClick?: () => void;
+  readonly showLogo?: boolean;
+  readonly saveAndExit?: () => void;
+  readonly wizardMode?: boolean;
+  readonly saveAndExitDisabled?: boolean;
 }
 
 export default function NavigationHeader({
-    onBack,
-    onHome,
-    title,
-    showBackButton = true,
-    showHomeButton = false,
-    showLogo = false,
-    saveAndExit,
-    wizardMode = false,
-    saveAndExitDisabled = false,
-    onMenuClick
+  showLogo = false,
+  saveAndExit,
+  wizardMode = false,
+  saveAndExitDisabled = false,
 }: NavigationHeaderProps) {
 
-    const dispatch = useAppDispatch();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const auth = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const auth = useAppSelector((state) => state.auth);
 
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const currentPath = location.pathname;
 
-    const handleLogout = useCallback(() => {
-        dispatch(setView(null));
-        dispatch(logout());
-        navigate("/");
-    }, []);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-    const getButtonClasses = (path: string): string => {
+  const handleLogout = useCallback(() => {
+    dispatch(setView(null));
+    dispatch(logout());
+    navigate("/");
+  }, [dispatch, navigate]);
 
-        return location.pathname === path
-            ? "flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-500 text-white font-medium rounded-lg transition-colors text-sm whitespace-nowrap"
-            : "flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-sm";
-    };
+  const navItems = [
+    { icon: Plus, label: "New Project", action: () => handleAddProject(navigate), path: "/project" },
+    { icon: UserRound, label: "Contacts", action: () => navigate("/customer-contacts"), path: "/customer-contacts" },
+    { icon: FileTypeCorner, label: "Documents", action: () => navigate("/documents"), path: "/documents" },
+    { icon: CheckCircle2, label: "Tasks", action: () => handleViewTasks(navigate), path: "/tasks" },
+  ];
 
-    return (
-        <div className="bg-white border-b border-slate-200 shadow-sm">
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setMenuOpen(false);
+  };
 
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+  return (
+    <div className="sticky top-0 z-[100] isolation-isolate backdrop-blur-xl bg-gradient-to-r from-[#0075be]/95 to-[#00aeea]/95 border-b border-white/20 shadow-xl">
 
-                    {/* LEFT SECTION */}
-                    <div className="flex items-center justify-between lg:justify-start gap-3">
-                        <button
-                            onClick={onMenuClick}
-                            className="md:hidden p-2 rounded-lg hover:bg-slate-100"
-                        >
-                            <Menu className="w-6 h-6 text-slate-700" />
-                        </button>
-                        {/* Logo */}
-                        {showLogo && (
-                            <div className="flex items-center gap-2 shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                                    <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                                </div>
+      {/* HEADER */}
+      <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3">
 
-                                <span className="text-base sm:text-xl font-bold text-slate-900 whitespace-nowrap">
-                                    Lien Manager
-                                </span>
-                            </div>
-                        )}
+        {/* LEFT */}
+        <div className="flex items-center gap-3">
 
-                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+          {/* MENU BUTTON */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300"
+            >
+              <Menu className="w-5 h-5 text-white" />
+              <ChevronDown className={`w-4 h-4 text-white transition ${menuOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-                            {!wizardMode && showBackButton && onBack && (
-                                <button
-                                    onClick={onBack}
-                                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-sm"
-                                >
-                                    <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    <span className="hidden sm:inline">Back</span>
-                                </button>
-                            )}
+            {/* DROPDOWN */}
+            <div className={`absolute left-0 mt-3 w-72 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-3 space-y-2 
+              z-[999] pointer-events-auto transition-all duration-300
+              ${menuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
 
-                            {!wizardMode && showHomeButton && onHome && (
-                                <button
-                                    onClick={onHome}
-                                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-sm"
-                                >
-                                    <Home className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    <span className="hidden sm:inline">Dashboard</span>
-                                </button>
-                            )}
+              {menuSections.map((section, si) => (
+                <div key={si}>
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentPath === item.path;
 
-                            {!wizardMode && title && !showLogo && (
-                                <h1 className="text-sm sm:text-lg font-semibold text-slate-900 truncate">
-                                    {title}
-                                </h1>
-                            )}
-
-                        </div>
-
-                    </div>
-
-
-                    {/* RIGHT SECTION */}
-                    <div className="flex items-center justify-between gap-2  lg:flex-nowrap lg:justify-end">
-
-                        {!wizardMode && (
-                            <div className='flex items-center gap-2'>
-                                {/* New Project */}
-                                <button
-                                    onClick={() => handleAddProject(navigate)}
-                                    className={getButtonClasses("/project")}
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span className="hidden sm:inline">New Project</span>
-                                </button>
-
-
-                                {/* Contacts */}
-                                <button
-                                    onClick={() => navigate("/customer-contacts")}
-                                    className={getButtonClasses("/customer-contacts")}
-                                >
-                                    <Users className="w-4 h-4" />
-                                    <span className="hidden md:inline">Contacts</span>
-                                </button>
-
-
-                                {/* Documents */}
-                                <button
-                                    onClick={() => navigate("/documents")}
-                                    className={getButtonClasses("/documents")}
-                                >
-                                    <FileText className="w-4 h-4" />
-                                    <span className="hidden md:inline">Documents</span>
-                                </button>
-
-                                {/* Tasks */}
-                                <button
-                                    onClick={() => handleViewTasks(navigate)}
-                                    className={getButtonClasses("/tasks")}
-                                >
-                                    <CheckSquare className="w-4 h-4" />
-                                    <span className="hidden md:inline">Tasks</span>
-                                </button>
-                            </div>
-                        )}
-
-
-                        {/* Wizard Mode */}
-                        {wizardMode && saveAndExit && (
-                            <button
-                                onClick={saveAndExit}
-                                disabled={saveAndExitDisabled}
-                                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors font-medium shadow-sm text-sm"
-                            >
-                                <Save className="w-4 h-4" />
-                                <span className="hidden sm:inline">Save & Exit</span>
-                            </button>
-                        )}
-                        <div className="" id="navbar-dropdown">
-                            <ul className="flex flex-col font-medium relative">
-                                <li>
-                                    <button
-                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                        id="dropdownNvbarButton" data-dropdown-toggle="dropdownNavbar" className="flex items-center gap-2 px-2 py-1 rounded-full hover:bg-slate-100 transition">
-                                        <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 shadow-sm text-white">
-                                            <User className="w-5 h-5" />
-                                        </div>
-                                    </button>
-                                    {isMenuOpen && (
-                                        <div className="absolute right-0 mt-2 z-50 bg-white border rounded-lg shadow-lg w-44">
-                                            <ul className="p-2 text-sm">
-                                                <li>
-                                                    <div className="px-4 py-3 border-b bg-slate-50">
-                                                        {auth?.user?.name && (
-                                                            <p className="text-sm font-semibold text-slate-800">
-                                                                {auth?.user?.name}
-                                                            </p>
-                                                        )}
-                                                        {auth?.user?.email && (
-
-                                                            <p className="text-xs text-slate-500 truncate">
-                                                                {auth?.user?.email}
-                                                            </p>
-                                                        )}
-                                                    </div>
-
-                                                </li>
-                                                <li>
-                                                    <button
-                                                        onClick={() => {
-                                                            navigate("/profile");
-                                                            setIsMenuOpen(false);
-                                                        }}
-                                                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
-                                                    >
-                                                        <User className="w-4 h-4" />
-                                                        Profile
-                                                    </button>
-
-                                                </li>
-                                                <li>
-                                                    <button
-                                                        onClick={handleLogout}
-                                                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
-                                                    >
-                                                        <LogOut className="w-4 h-4" />
-                                                        Logout
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    )}
-                                </li>
-                            </ul>
-                        </div>
-
-                    </div>
-
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleNavigate(item.path)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+                          ${isActive
+                            ? 'bg-gradient-to-r from-[#0075be] to-[#00aeea] text-white shadow'
+                            : 'hover:bg-slate-100 text-slate-700'
+                          }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {item.label}
+                      </button>
+                    );
+                  })}
                 </div>
+              ))}
 
             </div>
+          </div>
+
+          {/* LOGO */}
+          {showLogo && (
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+                <FileText className="text-white w-5 h-5" />
+              </div>
+              <span className="text-white font-bold text-base md:text-lg tracking-wide">
+                Lien Manager
+              </span>
+            </div>
+          )}
         </div>
-    );
+
+        {/* CENTER NAV */}
+        <div className="hidden md:flex items-center gap-2 bg-white/10 px-2 py-1 rounded-2xl backdrop-blur-lg border border-white/20">
+
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPath === item.path;
+
+            return (
+              <button
+                key={item.path}
+                onClick={item.action}
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all duration-300 whitespace-nowrap
+                  ${isActive
+                    ? 'bg-white text-[#0075be] shadow-md'
+                    : 'text-white hover:bg-white/20'
+                  }`}
+              >
+                <Icon className="w-4 h-4" />
+                {item.label}
+
+                {isActive && (
+                  <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#0075be] rounded-full"></span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* RIGHT */}
+        <div className="flex items-center gap-3">
+
+          {/* SAVE & EXIT */}
+          {wizardMode && saveAndExit && (
+            <button
+              onClick={saveAndExit}
+              disabled={saveAndExitDisabled}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm
+                         bg-white text-[#0075be] rounded-xl font-semibold shadow-md
+                         hover:scale-105 hover:shadow-lg transition-all duration-300
+                         disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span className="hidden sm:inline">Save & Exit</span>
+            </button>
+          )}
+
+          {/* PROFILE */}
+          <div className="relative">
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-2"
+            >
+              <div className="w-9 h-9 rounded-full bg-white text-[#0075be] flex items-center justify-center font-bold shadow-md">
+                {auth?.user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+            </button>
+
+            {/* PROFILE DROPDOWN */}
+            <div
+  className={`absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100
+  z-[999] pointer-events-auto transition-all duration-300 origin-top-right
+  ${profileOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+>
+
+  {/* USER INFO */}
+  <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#0075be] to-[#00aeea] text-white flex items-center justify-center font-bold shadow">
+      {auth?.user?.name?.charAt(0)?.toUpperCase() || "U"}
+    </div>
+    <div className="flex flex-col">
+      <span className="text-sm font-semibold text-gray-800">
+        {auth?.user?.name || "User"}
+      </span>
+      <span className="text-xs text-gray-500 truncate">
+        {auth?.user?.email || "user@email.com"}
+      </span>
+    </div>
+  </div>
+
+  {/* MENU ITEMS */}
+  <div className="py-2">
+
+    <button
+      onClick={() => {
+        navigate("/profile");
+        setProfileOpen(false);
+      }}
+      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition"
+    >
+      <UserRound className="w-4 h-4 text-gray-500" />
+      My Profile
+    </button>
+
+    <div className="my-2 border-t border-gray-100"></div>
+
+    <button
+      onClick={handleLogout}
+      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
+    >
+      <LogOut className="w-4 h-4" />
+      Logout
+    </button>
+              </div>
+           </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* MOBILE NAV */}
+      <div className="md:hidden grid grid-cols-4 gap-2 px-2 pb-3 pt-1 bg-white/10 backdrop-blur-lg">
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentPath === item.path;
+
+          return (
+            <button
+              key={item.path}
+              onClick={item.action}
+              className={`flex flex-col items-center gap-1 py-2 rounded-xl text-xs transition-all duration-300
+                ${isActive
+                  ? 'bg-white text-[#0075be] shadow'
+                  : 'text-white/90 hover:bg-white/20'
+                }`}
+            >
+              <Icon className="w-4 h-4" />
+              {item.label}
+            </button>
+          );
+        })}
+
+      </div>
+    </div>
+  );
 }
