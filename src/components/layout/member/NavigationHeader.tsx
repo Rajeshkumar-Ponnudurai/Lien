@@ -1,17 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect, useRef} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  Plus,
-  LogOut,
-  FileTypeCorner,
-  UserRound,
-  CheckCircle2,
-  ChevronDown,
-  FileText,
-  Menu,
-  Save
-} from 'lucide-react';
-
+import {Plus,LogOut,FileTypeCorner,UserRound,CheckCircle2,ChevronDown,FileText,Menu,Save} from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { logout } from '../../../features/auth/authSlice';
 import { setView } from '../../../store/slices/viewSlice';
@@ -41,6 +30,8 @@ export default function NavigationHeader({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const menuRef = useRef(null);
+  const profileRef = useRef(null);
 
   const handleLogout = useCallback(() => {
     dispatch(setView(null));
@@ -60,8 +51,28 @@ export default function NavigationHeader({
     setMenuOpen(false);
   };
 
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    // MENU dropdown
+    if (menuRef.current && !menuRef.current.contains(event.target)) {
+      setMenuOpen(false);
+    }
+
+    // PROFILE dropdown
+    if (profileRef.current && !profileRef.current.contains(event.target)) {
+      setProfileOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
   return (
-    <div className="sticky top-0 z-[100] isolation-isolate backdrop-blur-xl bg-gradient-to-r from-[#0075be]/95 to-[#00aeea]/95 border-b border-white/20 shadow-xl">
+    <div className="sticky top-0 z-[40] isolation-isolate backdrop-blur-xl bg-gradient-to-r from-[#0075be]/95 to-[#00aeea]/95 border-b border-white/20 shadow-xl">
 
       {/* HEADER */}
       <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3">
@@ -70,7 +81,7 @@ export default function NavigationHeader({
         <div className="flex items-center gap-3">
 
           {/* MENU BUTTON */}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300"
@@ -80,10 +91,13 @@ export default function NavigationHeader({
             </button>
 
             {/* DROPDOWN */}
-            <div className={`absolute left-0 mt-3 w-72 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-3 space-y-2 
-              z-[999] pointer-events-auto transition-all duration-300
-              ${menuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-
+            <div
+            className={`absolute left-0 mt-3 w-72 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-3 space-y-2 
+            transition-all duration-300
+           ${menuOpen 
+             ? 'opacity-100 scale-100 visible z-[999] pointer-events-auto' : 'opacity-0 scale-95 invisible z-[-1] pointer-events-none'
+              }`}
+>
               {menuSections.map((section, si) => (
                 <div key={si}>
                   {section.items.map((item) => {
@@ -171,7 +185,7 @@ export default function NavigationHeader({
           )}
 
           {/* PROFILE */}
-          <div className="relative">
+          <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
               className="flex items-center gap-2"
@@ -183,10 +197,12 @@ export default function NavigationHeader({
 
             {/* PROFILE DROPDOWN */}
             <div
-  className={`absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100
-  z-[999] pointer-events-auto transition-all duration-300 origin-top-right
-  ${profileOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
->
+              className={`absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100
+              transition-all duration-300 origin-top-right
+              ${profileOpen
+              ? 'opacity-100 scale-100 visible z-[999] pointer-events-auto'
+              : 'opacity-0 scale-95 invisible z-[-1] pointer-events-none'
+                }`}>
 
   {/* USER INFO */}
   <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
