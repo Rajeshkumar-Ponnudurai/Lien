@@ -145,7 +145,7 @@ export default function RecentContactsScreen() {
               <div className="w-5 h-0.5 rounded-full" style={{ background: primaryGradient }} />
               <span className="text-xs font-bold tracking-widest uppercase text-slate-400">Recent Contacts</span>
             </div> */}
-            <h1 className="text-4xl font-extrabold tracking-tight leading-none">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-none">
               <GradientText>Recent Contacts</GradientText>
             </h1>
             <p className="text-slate-500 text-sm mt-2 font-medium">
@@ -260,7 +260,7 @@ export default function RecentContactsScreen() {
                 <ChevronRight className="w-3.5 h-3.5" />
               </div>
             </div>
-          )}
+          )}  
         </div>
       </div>
 
