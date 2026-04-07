@@ -2,45 +2,63 @@ import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useGetTaskStatusCountQuery } from "../../../features/task/taskDataApi";
 
 const TotalCountCards = () => {
+  const { data, isFetching } = useGetTaskStatusCountQuery();
 
-    const { data, isFetching } = useGetTaskStatusCountQuery();
+  // Design tokens synchronized with Project Dashboard
+  const primaryGradient = "linear-gradient(-30deg, #0075be, #00aeea 100%)";
+  const secondaryGradient = "linear-gradient(-30deg, #334756, #003F58 100%)";
 
-    return (
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-slate-600 mb-1">Total Tasks</p>
-                        <p className="text-3xl font-bold text-slate-900">{
-                            isFetching ? (<span className="inline-block w-6 h-3 ml-1 bg-slate-200 rounded animate-pulse"></span>) : data?.data?.total_count || 0}</p>
-                    </div>
-                    <CheckCircle2 className="w-12 h-12 text-blue-600 opacity-20" />
-                </div>
-            </div>
+  const Card = ({ title, value, icon: Icon, isOverdue = false }) => (
+    <div className="flex items-center gap-3 px-5 py-3 bg-white rounded-2xl border border-slate-100 shadow-sm self-start sm:self-auto transition-all hover:shadow-md">
+      <div
+        className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0"
+        style={{ background: isOverdue ? 'linear-gradient(-30deg, #ef4444, #f87171 100%)' : primaryGradient }}
+      >
+        <Icon className="w-4 h-4" /> 
+      </div>
+      <div>
+        <p
+          className="text-xl font-extrabold leading-none"
+          style={{
+            backgroundImage: isOverdue ? 'linear-gradient(-30deg, #991b1b, #ef4444 100%)' : secondaryGradient,
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          {isFetching ? (
+            <span className="inline-block w-6 h-4 bg-slate-100 animate-pulse rounded" />
+          ) : (
+            value || 0
+          )}
+        </p>
+        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
+          {title}
+        </p>
+      </div>
+    </div>
+  );
 
-            <div className="bg-white rounded-lg border border-orange-200 p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-slate-600 mb-1">Upcoming (7 days)</p>
-                        <p className="text-3xl font-bold text-orange-600">{
-                            isFetching ? (<span className="inline-block w-6 h-3 ml-1 bg-slate-200 rounded animate-pulse"></span>) : data?.data?.upcoming_count || 0}</p>
-                    </div>
-                    <Clock className="w-12 h-12 text-orange-600 opacity-20" />
-                </div>
-            </div>
+  return (
+    <div className="flex flex-wrap gap-4 mb-8">
+      <Card 
+        title="Total Tasks" 
+        value={data?.data?.total_count} 
+        icon={CheckCircle2} 
+      />
+      <Card 
+        title="Upcoming (7 days)" 
+        value={data?.data?.upcoming_count} 
+        icon={Clock} 
+      />
+      <Card 
+        title="Overdue" 
+        value={data?.data?.overdue_count} 
+        icon={AlertCircle}
+        isOverdue={Number(data?.data?.overdue_count) > 0}
+      />
+    </div>
+  );
+};
 
-            <div className="bg-white rounded-lg border border-red-200 p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-slate-600 mb-1">Overdue</p>
-                        <p className="text-3xl font-bold text-red-600">{
-                            isFetching ? (<span className="inline-block w-6 h-3 ml-1 bg-slate-200 rounded animate-pulse"></span>) : data?.data?.overdue_count || 0}</p>
-                    </div>
-                    <AlertCircle className="w-12 h-12 text-red-600 opacity-20" />
-                </div>
-            </div>
-        </div>
-    )
-}
-
-export default TotalCountCards
+export default TotalCountCards;

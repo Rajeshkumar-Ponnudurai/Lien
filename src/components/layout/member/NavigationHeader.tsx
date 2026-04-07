@@ -132,7 +132,7 @@ export default function NavigationHeader({
                 <FileText className="text-white w-5 h-5" />
               </div>
               <span className="text-white font-bold text-base md:text-lg tracking-wide">
-                Lien Manager
+                Optrixx
               </span>
             </div>
           )}
